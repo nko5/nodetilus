@@ -1,8 +1,8 @@
 {
-  "name": "nko2015-entry",
+  "name": "nodetilus",
   "version": "0.0.1",
-  "description": "Our soon to be awesome entry for NKO2015. Let's make something amazing.",
-  "author": "Node Knockout Team <all@nodeknockout.com>",
+  "description": "Find the most similar node projects to mine(based on package.json), using github as the Source;",
+  "author": "Nodetilus Team <info@mintitmedia.com>",
   "main": "./app.js",
   "dependencies": {
     "express": "3.x.x"
