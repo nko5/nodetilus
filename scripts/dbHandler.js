@@ -1,5 +1,6 @@
 const sqlite3 = require('sqlite3').verbose(); 
 const when = require('when');
+const _ = require('lodash');
 
 function dbHandler() {
   const db = new sqlite3.Database('db.sqlite');
@@ -52,7 +53,7 @@ function dbHandler() {
     createTables: function() {
       var promises = [];
       promises.push(query.run("CREATE TABLE repo (id integer primary key autoincrement, full_name TEXT, description TEXT, html_url TEXT, languages_url TEXT, stargazers_count TEXT, watchers_count TEXT, language TEXT, forks_count TEXT, default_branch TEXT, score TEXT)"));
-      promises.push(query.run("CREATE TABLE metadata (id integer primary key autoincrement, repo_id integer, keywords TEXT, devDependencies TEXT, dependencies TEXT)"));
+      promises.push(query.run("CREATE TABLE metadata (id integer primary key autoincrement, repo_id integer, keywords TEXT, packages TEXT)"));
       return when.all(promises);
     },
 
@@ -72,7 +73,8 @@ function dbHandler() {
     },
 
     saveRepoPackages: function(repoID, package) {
-      return query.run("INSERT INTO metadata VALUES (NULL, " + repoID + ", '" + JSON.stringify(package.keywords) + "', '" + JSON.stringify(package.devDependencies) +"', '" + JSON.stringify(package.dependencies) + "')");
+      const packages = _.merge({}, package.devDependencies, package.dependencies);
+      return query.run("INSERT INTO metadata VALUES (NULL, " + repoID + ", '" + JSON.stringify(package.keywords) + "', '" + JSON.stringify(packages) +"')");
     }
   
   };
