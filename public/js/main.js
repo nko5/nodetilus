@@ -9,18 +9,23 @@ function init() {
 }
 
 function getRepos( event ) {
-	var data = {};
+	var data = $('#repoURL').val();
 
 	enableLoading();
-	event.preventDefault();
 
-	data = $('#repoURL').val();
-
-	$.get( '/api/repo', data, function( data ) {
-		console.log('Search result:', data);
-		$('#result').html( data );
-		disbleLoading();
+	$.get( '/api/repo', data, function(response) {
+		console.log('Search result:', response);
+		displayResults(response);
 	});
+
+	event.preventDefault();
+}
+
+function displayResults(response) {
+	setTimeout(function() {
+		disbleLoading();
+		$('#result').text(response);
+	}, 300);
 }
 
 function enableLoading() {
