@@ -15,6 +15,26 @@ const nodetilus = require('./scripts/nodetilus')();
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('db.sqlite');
 
+const topTen = [];
+
+const fightAPlace = function(repo) {
+	// nodetilus_score
+	if(topTen.length < 10 ) {
+		topTen.push(repo);
+		return true;
+	}
+
+	var updated = false;
+	for(var i=0, len=topTen.length; i<len; i++) {
+		if(repo.nodetilus_score > topTen[i].nodetilus_score) {
+			topTen[i] = repo;
+			updated = true;
+			break;
+		}
+	}
+	return updated;
+};
+
 app.get('/api/repo', function(req, res) {
 	var repo_content = {};
 	var repo_url = req.query.repo_url ? req.query.repo_url : '';
@@ -37,6 +57,10 @@ app.get('/api/repo', function(req, res) {
 
 			  		repo['similarity_percentage'] = percentages.similarity_percentage;
 			  		repo['density_percentage'] = percentages.density_percentage;
+
+			  		if( fightAPlace(repo) ) {
+			  			console.log('project added', repo);
+			  		}
 			  	})
 			    
 			    console.log('============================================================');
