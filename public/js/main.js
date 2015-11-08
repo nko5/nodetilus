@@ -2,25 +2,33 @@ $(document).ready(function(){
   init();
 });
 
-
-
 function init() {
   console.log('init');
 
-  $("#nautilusForm" ).submit(function( event ) {
-  	enableLoading();
-  	event.preventDefault();
-  });
+  $('#nautilusForm' ).submit(getRepos);
 }
 
+function getRepos( event ) {
+	var data = {};
 
+	enableLoading();
+	event.preventDefault();
+
+	data = $('#repoURL').val();
+
+	$.get( '/api/repo', data, function( data ) {
+		console.log('Search result:', data);
+		$('#result').html( data );
+		disbleLoading();
+	});
+}
 
 function enableLoading() {
-	$("#nautilusForm :input").prop("disabled", true);
+	$('#nautilusForm :input').prop('disabled', true);
 	$('#loading-overlay').show();
 }
 
 function disbleLoading() {
+	$('#nautilusForm :input').prop('disabled', false);
 	$('#loading-overlay').hide();
-	$("#nautilusForm :input").prop("disabled", false);
 }
