@@ -7,19 +7,12 @@ function gitHubHandler() {
     generic: 'https://api.github.com/',
     content: 'https://raw.githubusercontent.com/'
   };
-  const conf = { 
-    path: null,
-    headers: {
-      'User-Agent': 'garciadiazjaime'
-    }
-  };
   const headers = {
     'User-Agent': 'garciadiazjaime'
   };
   const tag = 'javascript';
   const lang = 'Javascript'
   const perPage = 100;
-  var page = 1;
 
   const formatRepoResponse = function(items) {
     var response = [];
@@ -43,21 +36,29 @@ function gitHubHandler() {
   };
 
   const formatPackageResponse = function(data) {
-    data = typeof data === 'string' ? JSON.parse(data) : data;
-    return {
-      keywords: data.keywords || [],
-      devDependencies: data.devDependencies || {},
-      dependencies: data.dependencies || {}
-    };
+    try {
+      // data = typeof data === 'string' ? JSON.stringify(eval("(" + data + ")")) : data;
+      data = typeof data === 'string' ? JSON.parse(data) : data;
+      return {
+        keywords: data.keywords || [],
+        devDependencies: data.devDependencies || {},
+        dependencies: data.dependencies || {}
+      };
+    }
+    catch(e) {
+      console.log('==== EXCEPTION', e, typeof data, data);
+    }
   };
 
   return {
-    getReposFromSource: function(customePage) {
-      page = customePage || page;
-      conf.path = [URL.generic, 'search/repositories?q=', tag, '+language:', lang, '&sort=stars&order=desc&per_page=', perPage, '&page=', page].join('');
+    getReposFromSource: function(page) {
+      const path = [URL.generic, 'search/repositories?q=', tag, '+language:', lang, '&sort=stars&order=desc&per_page=', perPage, '&page=', page].join('');
 
       return when.promise((resolve, reject, notify) => {
-        clientREST(conf).then(
+        clientREST({ 
+            path: path,
+            headers: headers
+          }).then(
           (response) => {
             resolve(formatRepoResponse(response.entity.items));
           },
@@ -70,6 +71,7 @@ function gitHubHandler() {
 
     getPackageFromRepo: function(repo) {
       const path = [URL.content, repo.full_name, '/', repo.default_branch, '/', 'package.json'].join('');
+
       return when.promise((resolve, reject, notify) => {
         
         clientREST({ 
@@ -77,6 +79,7 @@ function gitHubHandler() {
             headers: headers
           }).then(
           (response) => {
+
             if(response.entity === 'Not Found') {
               console.log('Not Found', response.request.path);
               reject(response.entity);

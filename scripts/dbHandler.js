@@ -3,47 +3,76 @@ const when = require('when');
 
 function dbHandler() {
   const db = new sqlite3.Database('db.sqlite');
-  var query;
+  const query = {
+    run: function(sql) {
+      return when.promise(function(resolve, reject, notify) {
+        db.run(sql, function(err) {
+          if(err) {
+            reject(err);
+          }
+          resolve(this.lastID, this.changes);
+        });
+      });
+    },
 
-  var executeQuery = function(sql) {
+    get: function(sql) {
+      return when.promise(function(resolve, reject, notify) {
+        db.get(sql, function(err, row) {
+          if(err) {
+            reject(err);
+          }
+          resolve(row);
+        });
+      });
+    }
+  };
+
+  var getQuery = function(sql, type) {
     return when.promise(function(resolve, reject, notify) {
-      db.run(sql, function(err) {
-        if(err) {
-          reject(err);
-        }
-        resolve(this.lastID, this.changes);
-      });    
+      if( !type || type === 'run' ) {
+        db.run(sql, function(err) {
+          if(err) {
+            reject(err);
+          }
+          resolve(this.lastID, this.changes);
+        });    
+      }
+      else if( type === 'get' ) {
+        db.get(sql, function(err, row) {
+          if(err) {
+            reject(err);
+          }
+          resolve(row);
+        }); 
+      }
     });
   }
 
   return {
     createTables: function() {
       var promises = [];
-      promises.push(executeQuery("CREATE TABLE repo (id integer primary key autoincrement, full_name TEXT, description TEXT, html_url TEXT, languages_url TEXT, stargazers_count TEXT, watchers_count TEXT, language TEXT, forks_count TEXT, default_branch TEXT, score TEXT)"));
-      promises.push(executeQuery("CREATE TABLE metadata (id integer primary key autoincrement, repo_id integer, keywords TEXT, devDependencies TEXT, dependencies TEXT)"));
+      promises.push(query.run("CREATE TABLE repo (id integer primary key autoincrement, full_name TEXT, description TEXT, html_url TEXT, languages_url TEXT, stargazers_count TEXT, watchers_count TEXT, language TEXT, forks_count TEXT, default_branch TEXT, score TEXT)"));
+      promises.push(query.run("CREATE TABLE metadata (id integer primary key autoincrement, repo_id integer, keywords TEXT, devDependencies TEXT, dependencies TEXT)"));
       return when.all(promises);
     },
 
     dropTables: function() {
       var promises = [];
-      promises.push(executeQuery("DROP TABLE repo"));
-      promises.push(executeQuery("DROP TABLE metadata"));
+      promises.push(query.run("DROP TABLE repo"));
+      promises.push(query.run("DROP TABLE metadata"));
       return when.all(promises);
     },
 
     isRepoAlreadyRegistered: function(repoName) {
-      query = "SELECT id FROM repo where full_name = '" + repoName + "'";
-      return executeQuery(query);;
+      return query.get("SELECT id FROM repo where full_name = '" + repoName + "'");
     },
 
     saveRepo: function(repo) {
-      query = "INSERT INTO repo VALUES (NULL, '" + repo.full_name + "', '" + repo.description +"', '" + repo.html_url +"', '" + repo.languages_url +"', '" + repo.stargazers_count +"', '" + repo.watchers_count + "', '" + repo.language +"', '" + repo.forks_count + "', '" + repo.default_branch +"', '" + repo.score + "')";
-      return executeQuery(query);
+      return query.run("INSERT INTO repo VALUES (NULL, '" + repo.full_name + "', '" + repo.description +"', '" + repo.html_url +"', '" + repo.languages_url +"', '" + repo.stargazers_count +"', '" + repo.watchers_count + "', '" + repo.language +"', '" + repo.forks_count + "', '" + repo.default_branch +"', '" + repo.score + "')");
     },
 
     saveRepoPackages: function(repoID, package) {
-      query = "INSERT INTO metadata VALUES (NULL, " + repoID + ", '" + JSON.stringify(package.keywords) + "', '" + JSON.stringify(package.devDependencies) +"', '" + JSON.stringify(package.dependencies) + "')";
-      return executeQuery(query);
+      return query.run("INSERT INTO metadata VALUES (NULL, " + repoID + ", '" + JSON.stringify(package.keywords) + "', '" + JSON.stringify(package.devDependencies) +"', '" + JSON.stringify(package.dependencies) + "')");
     }
   
   };

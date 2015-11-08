@@ -8,40 +8,43 @@ function crone(page) {
       repos.map((repo) => {
 
         dbHandler.isRepoAlreadyRegistered(repo.full_name)
-          .then(() => {
+          .then((flag) => {
+            if(!flag) {
+              dbHandler.saveRepo(repo)
+                .then((repoID) => {
+                  repo.id = repoID;
 
-            dbHandler.saveRepo(repo)
-              .then((repoID) => {
-                repo.id = repoID;
+                    setTimeout(() => {
+                      gitHubHandler.getPackageFromRepo(repo)
+                        .then((repoPackage) => {
 
-                  setTimeout(() => {
-                    gitHubHandler.getPackageFromRepo(repo)
-                      .then((repoPackage) => {
+                          dbHandler.saveRepoPackages(repo.id, repoPackage)
+                            .then((packageID) => {
+                              console.log(['[', repo.id, '] ', repo.full_name, '; packages added with ID:', packageID].join(''));
+                            })
+                            .otherwise((err) => {
+                              console.log('5 err', err);
+                            }); // saveRepoPackages
 
-                        dbHandler.saveRepoPackages(repo.id, repoPackage)
-                          .then((packageID) => {
-                            console.log(['[', repo.id, '] ', repo.full_name, '; packages added with ID:', packageID].join(''));
-                          })
-                          .otherwise((err) => {
-                            console.log('5 err', err);
-                          }); // saveRepoPackages
+                        })
+                        .otherwise((err) => {
+                          console.log('4 err', err);
+                        }); // getPackageFromRepo
 
-                      })
-                      .otherwise((err) => {
-                        console.log('4 err', err);
-                      }); // getPackageFromRepo
+                    }, 500); // setTimeout
 
-                  }, 500); // setTimeout
-
-              })
-              .otherwise((err) => {
-                console.log('3 err', err);
-              });  // saveRepo
+                })
+                .otherwise((err) => {
+                  console.log('3 err', err);
+                });  // saveRepo
+            } // if !flag
+            else {
+              console.log(repo.full_name + ' already registered');  
+            }
 
           })
           .otherwise((err) => {
-            var msg = (!err) ? repo.full_name + ' already registered' : err;
-            console.log('2 err', msg);
+            console.log('2 err', err);
           }); // isRepoAlreadyRegistered
 
       });
