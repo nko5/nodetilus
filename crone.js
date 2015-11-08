@@ -1,15 +1,9 @@
-const rest = require('rest');
-const mime = require('rest/interceptor/mime');
-const errorCode = require('rest/interceptor/errorCode');
-
-var dbHandler = require('./scripts/dbHandler')();
-
-
+const dbHandler = require('./scripts/dbHandler')();
 const gitHubHandler = require('./scripts/gitHubHandler')();
 
 function crone(page) {
   gitHubHandler.getReposFromSource(page)
-    .then(function(repos) {
+    .then((repos) => {
 
       repos.map((repo) => {
 
@@ -18,24 +12,26 @@ function crone(page) {
 
             dbHandler.saveRepo(repo)
               .then((repoID) => {
+                repo.id = repoID;
 
-                console.log(repo.full_name, 'new record', repoID);
+                  setTimeout(() => {
+                    gitHubHandler.getPackageFromRepo(repo)
+                      .then((repoPackage) => {
 
-                gitHubHandler.getPackageFromRepo(repo)
-                  .then((package) => {
+                        dbHandler.saveRepoPackages(repo.id, repoPackage)
+                          .then((packageID) => {
+                            console.log(['[', repo.id, '] ', repo.full_name, '; packages added with ID:', packageID].join(''));
+                          })
+                          .otherwise((err) => {
+                            console.log('5 err', err);
+                          }); // saveRepoPackages
 
-                    dbHandler.saveRepoPackages(repoID, package)
-                      .then((packageID) => {
-                        console.log(repo.full_name, '[', repoID, ']; packages added; ID', packageID);
                       })
                       .otherwise((err) => {
-                        console.log('5 err', err);
-                      }); // saveRepoPackages
+                        console.log('4 err', err);
+                      }); // getPackageFromRepo
 
-                  })
-                  .otherwise((err) => {
-                    console.log('4 err', err);
-                  }); // getPackageFromRepo
+                  }, 500); // setTimeout
 
               })
               .otherwise((err) => {
@@ -51,12 +47,16 @@ function crone(page) {
       });
 
     }) // getReposFromSource
-    .otherwise(function(err) {
+    .otherwise((err) => {
       console.log('1 err', err);
     });
 }
 
-crone(1);
+for(var i=1, len=10; i<len; i++) {
+  ((page) => {
+    setTimeout(() => {
+      crone(page);  
+    }, 300);
+  })(i);
+}
 
-
-console.log('end');
