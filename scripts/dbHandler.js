@@ -68,6 +68,10 @@ function dbHandler() {
       return query.get("SELECT id FROM repo where full_name = '" + repoName + "'");
     },
 
+    getRepoInfo: function(repoID) {
+      return query.get("SELECT * FROM repo where id = " + repoID);
+    },
+
     saveRepo: function(repo) {
       return query.run("INSERT INTO repo VALUES (NULL, '" + repo.full_name + "', '" + repo.description +"', '" + repo.html_url +"', '" + repo.languages_url +"', '" + repo.stargazers_count +"', '" + repo.watchers_count + "', '" + repo.language +"', '" + repo.forks_count + "', '" + repo.default_branch +"', '" + repo.score + "')");
     },
