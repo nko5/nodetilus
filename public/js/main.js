@@ -35,7 +35,7 @@ function displayResults(response) {
     ];
 
     //TODO: Replace mockResponse with response
-    $.map(mockResponse, function(repo) {
+    $.map(response, function(repo) {
       console.log(repo.full_name, repo.html_url);
       $('ul.nodetilus_results').append('<li class="list-group-item">' + repo.full_name + ' - <a href="'+ repo.html_url +'" target="_blank">View on github<a/></li>');
     });
