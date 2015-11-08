@@ -5,11 +5,11 @@ $(document).ready(function(){
 function init() {
   console.log('init');
 
-  $('#nautilusForm' ).submit(getRepos);
+  $('#nautilus_form' ).submit(getRepos);
 }
 
 function getRepos( event ) {
-	var data = $('#repoURL').val();
+	var data = { repo_url: $('#repo_url').val()};
 
 	enableLoading();
 
