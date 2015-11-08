@@ -13,6 +13,8 @@
   "scripts": {
     "start": "node app.js",
     "dev": "./node_modules/nodemon/bin/nodemon.js app.js ",
+    "crone": "node ./crone.js",
+    "reset": "node ./scripts/resetDB.js",
     "postinstall": "node scripts/postinstall.js"
   },
   "devDependencies": {

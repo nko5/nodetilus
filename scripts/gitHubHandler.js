@@ -52,7 +52,7 @@ function gitHubHandler() {
       page = customePage || page;
       conf.path = [URL.generic, 'search/repositories?q=', tag, '+language:', lang, '&sort=stars&order=desc&per_page=', perPage, '&page=', page].join('');
 
-      return when.promise(function(resolve, reject, notify) {
+      return when.promise((resolve, reject, notify) => {
         clientREST(conf).then(
           (response) => {
             resolve(formatRepoResponse(response.entity.items));
@@ -65,9 +65,16 @@ function gitHubHandler() {
     },
 
     getPackageFromRepo: function(repo) {
-      conf.path = [URL.content, repo.full_name, '/', repo.default_branch, '/', 'package.json'].join('');
-      return when.promise(function(resolve, reject, notify) {
-        clientREST(conf).then(
+      const path = [URL.content, repo.full_name, '/', repo.default_branch, '/', 'package.json'].join('');
+
+      return when.promise((resolve, reject, notify) => {
+        
+        clientREST({ 
+            path: path,
+            headers: {
+              'User-Agent': 'garciadiazjaime'
+            }
+          }).then(
           (response) => {
             if(response.entity === 'Not Found') {
               console.log('Not Found', response.request.path);
@@ -81,8 +88,11 @@ function gitHubHandler() {
             reject(errs);
           }
         );
+
       });
+
     }
+
   };
 };
 
