@@ -10,19 +10,52 @@ app.configure(function() {
 // require('./server/ddata.js');
 
 const gitHubHandler = require('./scripts/gitHubHandler')();
+const nodetilus = require('./scripts/nodetilus')();
 
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('db.sqlite');
 
 app.get('/api/repo', function(req, res) {
-  query = "SELECT * FROM repo LIMIT 10";
-  db.all(query, function(err, results) {
-  	results.map((repo) => {
-  		repo['percentage_similarity'] = Math.floor((Math.random() * 100) + 1);
-  		repo['percentage_density'] = Math.floor((Math.random() * 100) + 1);
-  	})
-    res.send(results);
-  });
+	var repo_content = {};
+	var repo_url = req.query.repo_url ? req.query.repo_url : '';
+
+	if (repo_url) {
+		gitHubHandler.getPackagesFromURL(repo_url)
+			.then((repo) => {
+				repo_content = repo;
+	    	console.log('============================================================');
+				console.log('MY packages:', repo_content.packages);
+
+			  query = "SELECT * FROM metadata where packages != '{}' LIMIT 10";
+			  db.all(query, function(err, results) {
+			  	var matches = {};
+
+			  	results.map((repo) => {
+			  		var repo_packages = JSON.parse(repo.packages);
+
+			  		var percentages = nodetilus.getPercentages(repo_content.packages, repo_packages)
+
+			  		repo['similarity_percentage'] = percentages.similarity_percentage;
+			  		repo['density_percentage'] = percentages.density_percentage;
+			  	})
+			    
+			    console.log('============================================================');
+			    console.log('RESULTS: ', results);
+					res.send(results);
+			  });
+
+				
+			})
+			.otherwise((err) => {
+				console.log('err', err);
+				res.send(err);
+			});
+	
+		
+	} else {
+		res.send('URL please...');
+	}
+
 });
 
 app.get('/api/repo/search', (req, res) => {
