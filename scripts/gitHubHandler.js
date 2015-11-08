@@ -1,5 +1,6 @@
 const clientREST = require('./clientREST');
 const when = require('when');
+const _ = require('lodash');
 
 function gitHubHandler() {
   const URL = {
@@ -12,6 +13,9 @@ function gitHubHandler() {
       'User-Agent': 'garciadiazjaime'
     }
   };
+  const headers = {
+    'User-Agent': 'garciadiazjaime'
+  };
   const tag = 'javascript';
   const lang = 'Javascript'
   const perPage = 100;
@@ -23,7 +27,7 @@ function gitHubHandler() {
       if(!item.private) {
         response.push({
           full_name: item.full_name,
-          description: item.description.replace(/'/g, ''),
+          description: item.description ? item.description.replace(/'/g, '') : '',
           html_url: item.html_url,
           languages_url: item.languages_url,
           stargazers_count: item.stargazers_count,
@@ -66,14 +70,11 @@ function gitHubHandler() {
 
     getPackageFromRepo: function(repo) {
       const path = [URL.content, repo.full_name, '/', repo.default_branch, '/', 'package.json'].join('');
-
       return when.promise((resolve, reject, notify) => {
         
         clientREST({ 
             path: path,
-            headers: {
-              'User-Agent': 'garciadiazjaime'
-            }
+            headers: headers
           }).then(
           (response) => {
             if(response.entity === 'Not Found') {
@@ -91,7 +92,44 @@ function gitHubHandler() {
 
       });
 
+    },
+
+    getPackagesFromURL: function(url) {
+      const bits = url.split('/').reverse();
+      const path = ['https://api.github.com/repos/', bits[1], '/', bits[0] ].join('');
+      
+      return when.promise((resolve, reject, notify) => {
+        clientREST({ 
+            path: path,
+            headers: headers
+          }).then(
+          (response) => {
+            if(response.entity === 'Not Found') {
+              console.log('Not Found', response.request.path);
+              reject(response.entity);
+            }
+            else{
+              const repo = formatRepoResponse([response.entity])[0];
+              this.getPackageFromRepo(repo)
+                .then((repoPackage) => {
+                  repo.keywords = repoPackage.keywords;
+                  repo.packages = _.merge({}, repoPackage.devDependencies, repoPackage.dependencies);
+                  resolve(repo);
+                })
+                .otherwise((err) => {
+                  console.log('1 err', err);
+                  reject(err);
+                });
+            }
+          },
+          (errs) => {
+            reject(errs);
+          }
+        );
+
+      });
     }
+
 
   };
 };
