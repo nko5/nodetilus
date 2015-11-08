@@ -55,7 +55,7 @@ function crone(page) {
     });
 }
 
-for(var i=10, len=20; i<len; i++) {
+for(var i=1, len=11; i<len; i++) {
   ((page) => {
     setTimeout(() => {
       crone(page);  
