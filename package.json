@@ -16,6 +16,7 @@
     "dev": "./node_modules/nodemon/bin/nodemon.js app.js ",
     "crone": "node ./crone.js",
     "reset": "node ./scripts/resetDB.js",
+    "reset-crone": "npm run reset && npm run crone",
     "postinstall": "node scripts/postinstall.js"
   },
   "devDependencies": {
