@@ -10,9 +10,17 @@ function gitHubHandler() {
   const headers = {
     'User-Agent': 'garciadiazjaime'
   };
-  const tag = 'javascript';
+  const tag = 'nodejs';
   const lang = 'Javascript'
   const perPage = 100;
+  const order = 'asc';
+  const sort = 'forks';
+
+  const cleanString = function(str) {
+    str = str.replace(/^\s*\n/gm, '');
+    str = str.replace(/,]/g, ']');
+    return str;
+  };
 
   const formatRepoResponse = function(items) {
     var response = [];
@@ -37,8 +45,7 @@ function gitHubHandler() {
 
   const formatPackageResponse = function(data) {
     try {
-      // data = typeof data === 'string' ? JSON.stringify(eval("(" + data + ")")) : data;
-      data = typeof data === 'string' ? JSON.parse(data) : data;
+      data = typeof data === 'string' ? JSON.parse(cleanString(data)) : data ? data : {};
       return {
         keywords: data.keywords || [],
         devDependencies: data.devDependencies || {},
@@ -52,8 +59,8 @@ function gitHubHandler() {
 
   return {
     getReposFromSource: function(page) {
-      const path = [URL.generic, 'search/repositories?q=', tag, '+language:', lang, '&sort=stars&order=desc&per_page=', perPage, '&page=', page].join('');
-      console.log('path', path);
+      const path = [URL.generic, 'search/repositories?q=', tag, '+language:', lang, '&sort=' + sort + '&order=' + order + '&per_page=', perPage, '&page=', page].join('');
+      console.log('getReposFromSource', path);
       return when.promise((resolve, reject, notify) => {
         clientREST({ 
             path: path,
@@ -81,8 +88,7 @@ function gitHubHandler() {
           (response) => {
 
             if(response.entity === 'Not Found') {
-              console.log('Not Found', response.request.path);
-              reject(response.entity);
+              reject(['****', response.entity, response.request.path].join(' '));
             }
             else{
               resolve(formatPackageResponse(response.entity));  
