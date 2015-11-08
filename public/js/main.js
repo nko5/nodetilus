@@ -22,7 +22,26 @@ function getRepos( event ) {
 function displayResults(response) {
   setTimeout(function() {
     disbleLoading();
-    $('#result').text(response);
+
+    var mockResponse = [
+      {
+        name: 'Repo 1',
+        url: 'https://github.com/nko5/nodetilus',
+        nodetilus_score: '70'
+      },
+      {
+        name: 'Repo 2',
+        url: 'https://github.com/nko5/nodetilus',
+        nodetilus_score: '80'
+      }
+    ];
+
+    //TODO: Replace mockResponse with response
+    $.map(mockResponse, function(repo) {
+      console.log(repo.name, repo.url, repo.nodetilus_score);
+      $('ul.nodetilus_results').append('<li class="">' + repo.name + ' - Nodetilus score: ' + repo.nodetilus_score + ' - <a href="'+ repo.url +'" target="_blank">View on github<a/></li>');
+    });
+
   }, 300);
 }
 
