@@ -35,7 +35,7 @@ app.get('/api/repo', function(req, res) {
 
 			  		var percentages = nodetilus.getPercentages(repo_content.packages, repo_packages)
 
-			  		repo['similarity_percentage'] = percentages.similarity_percentage;
+			  		repo['matches_percentage'] = percentages.matches_percentage;
 			  		repo['density_percentage'] = percentages.density_percentage;
 			  	})
 			    

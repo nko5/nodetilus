@@ -5,7 +5,7 @@ function nodetilus() {
   return {
     getPercentages: function(base_repo_packages, second_repo_packages) {
       var total_matches = 0;
-      var similarity_percentage = 0;
+      var matches_percentage = 0;
       var density_percentage = 0;
       var base_repo_packages_count = Object.keys(base_repo_packages).length;
       var second_repo_packages_count = Object.keys(second_repo_packages).length;
@@ -16,11 +16,11 @@ function nodetilus() {
         }
       }
 
-      similarity_percentage = total_matches ? (total_matches/base_repo_packages_count)*100 : 0;
+      matches_percentage = total_matches ? (total_matches/base_repo_packages_count)*100 : 0;
       density_percentage = total_matches ? (total_matches/second_repo_packages_count)*100 : 0;
 
       return {
-        similarity_percentage: Math.round(similarity_percentage),
+        matches_percentage: Math.round(matches_percentage),
         density_percentage: Math.round(density_percentage)
       }
     },
