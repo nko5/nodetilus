@@ -53,7 +53,7 @@ function gitHubHandler() {
   return {
     getReposFromSource: function(page) {
       const path = [URL.generic, 'search/repositories?q=', tag, '+language:', lang, '&sort=stars&order=desc&per_page=', perPage, '&page=', page].join('');
-
+      console.log('path', path);
       return when.promise((resolve, reject, notify) => {
         clientREST({ 
             path: path,
