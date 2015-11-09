@@ -49,7 +49,7 @@ app.get('/api/repo', function(req, res) {
         
         console.log('\n\nMY packages:', repo_content.packages);
 
-        query = "SELECT * FROM metadata where packages != '{}' LIMIT 20";
+        query = "SELECT * FROM metadata where packages != '{}'";
         db.all(query, function(err, results) {
           var matches = [];
           topTen = [];
